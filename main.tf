@@ -138,7 +138,7 @@ module "sg_ec2_nginx" {
       source_security_group_id = "${module.sg_alb_nginx.this_security_group_id}"
     },
     {
-      rule                     = "http-80-tcp"
+      rule                     = "https-443-tcp"
       source_security_group_id = "${module.sg_alb_nginx.this_security_group_id}"
     },
   ]
