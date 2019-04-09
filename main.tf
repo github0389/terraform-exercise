@@ -108,7 +108,7 @@ module "sg_ec2_nginx" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "2.16.0"
 
-  name        = "sg-ec2-nginx"
+  name        = "ec2-nginx"
   description = "nginx Security Group"
   vpc_id      = "${aws_vpc.vpc.id}"
 
@@ -148,7 +148,7 @@ module "sg_alb_nginx" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "2.16.0"
 
-  name        = "sg-alb-nginx"
+  name        = "alb-nginx"
   description = "ALB Security Group"
   vpc_id      = "${aws_vpc.vpc.id}"
 
