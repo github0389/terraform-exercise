@@ -87,6 +87,14 @@ data "aws_ami" "centos" {
   }
 }
 
+resource "aws_instance" "bastion" {
+  ami                         = "${data.aws_ami.centos.id}"
+  instance_type               = "t2.small"
+  vpc_security_group_ids      = ["${module.sg_ec2_bastion.this_security_group_id}"]
+  subnet_id                   = "${aws_subnet.subnet-a.id}"
+  associate_public_ip_address = true
+}
+
 resource "aws_instance" "instance" {
   count = "${var.instance-count}"
 
@@ -104,12 +112,12 @@ service nginx start
 EOF
 }
 
-module "sg_ec2_nginx" {
+module "sg_ec2_bastion" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "2.16.0"
 
-  name        = "ec2-nginx"
-  description = "nginx Security Group"
+  name        = "ec2-bastion"
+  description = "Bastion Security Group"
   vpc_id      = "${aws_vpc.vpc.id}"
 
   ingress_with_cidr_blocks = [
@@ -130,9 +138,42 @@ module "sg_ec2_nginx" {
     },
   ]
 
-  number_of_computed_ingress_with_source_security_group_id = 2
+  number_of_computed_egress_with_source_security_group_id = 1
+
+  computed_egress_with_source_security_group_id = [
+    {
+      rule                     = "ssh-tcp"
+      source_security_group_id = "${module.sg_ec2_nginx.this_security_group_id}"
+    },
+  ]
+}
+
+module "sg_ec2_nginx" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "2.16.0"
+
+  name        = "ec2-nginx"
+  description = "nginx Security Group"
+  vpc_id      = "${aws_vpc.vpc.id}"
+
+  egress_with_cidr_blocks = [
+    {
+      rule        = "http-80-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+    {
+      rule        = "https-443-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+  ]
+
+  number_of_computed_ingress_with_source_security_group_id = 3
 
   computed_ingress_with_source_security_group_id = [
+    {
+      rule                     = "ssh-tcp"
+      source_security_group_id = "${module.sg_ec2_bastion.this_security_group_id}"
+    },
     {
       rule                     = "http-80-tcp"
       source_security_group_id = "${module.sg_alb_nginx.this_security_group_id}"
