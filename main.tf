@@ -26,6 +26,12 @@ resource "aws_subnet" "subnet-c" {
   availability_zone = "${var.region}c"
 }
 
+resource "aws_subnet" "subnet-d" {
+  vpc_id            = "${aws_vpc.vpc.id}"
+  cidr_block        = "${var.subnet-cidr-d}"
+  availability_zone = "${var.region}d"
+}
+
 resource "aws_route_table" "subnet-route-table" {
   vpc_id = "${aws_vpc.vpc.id}"
 }
@@ -52,6 +58,11 @@ resource "aws_route_table_association" "subnet-b-route-table-association" {
 
 resource "aws_route_table_association" "subnet-c-route-table-association" {
   subnet_id      = "${aws_subnet.subnet-c.id}"
+  route_table_id = "${aws_route_table.subnet-route-table.id}"
+}
+
+resource "aws_route_table_association" "subnet-d-route-table-association" {
+  subnet_id      = "${aws_subnet.subnet-d.id}"
   route_table_id = "${aws_route_table.subnet-route-table.id}"
 }
 
