@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+
+TEMP=$(mktemp --directory --suffix=.git)
+
+cleanup() {
+  if [[ -d "${TEMP}" ]]; then
+    rm -rf "${TEMP}"
+  fi
+}
+
+trap cleanup SIGHUP SIGINT SIGTERM
+
+AWS_PROFILE=$(git config --get aws.profile)
+
+FILES="$(git diff-index --cached HEAD --name-only --diff-filter=AM)"
+if [[ -z "${FILES}" ]]; then
+  echo "No files to check."
+  exit 0
+else
+  echo "${FILES}" | while read FILE; do
+    FILENAME="${TEMP}/$(md5sum "${FILE}" | cut -d ' ' -f 1)"
+    git show ":${FILE}" > "${FILENAME}"
+  done
+fi
+
+JSON_FILES="$(echo "${FILES}" | grep --extended-regex '\.(js|json)$')"
+if [[ -n "${JSON_FILES}" && -n "$(which jsonlint)" ]]; then
+  STATUS=0
+  echo "jsonlint $(jsonlint --version)"
+  while read FILE; do
+    echo "-- ${FILE}"
+    FILENAME="${TEMP}/$(md5sum "${FILE}" | cut -d ' ' -f 1)"
+    jsonlint --quiet --compact "${FILENAME}"
+    if [[ ${?} -ne 0 ]]; then
+      # Output extra blank line to deal with errors inside loops
+      echo
+      STATUS=1
+    fi
+  done <<< "${JSON_FILES}"
+
+  echo
+  if [[ "${STATUS}" == "1" ]]; then
+    echo "FATAL: One or more JSON files did not pass linting.";
+    echo "  Fix them before committing. If it is not possible to fix them all"
+    echo "  commit with the option --no-verify."
+    cleanup
+    exit 1;
+  fi
+fi
+
+# NOTE: This block currently doesn't export the full state of the directory as
+#       it exists at the point of staging, so errors may not be indicative of
+#       the actual commit, but the current state of the configuration as exists
+#       on the workspace.
+
+TF_FILES="$(echo "${FILES}" | grep --extended-regex '\.tf$')"
+if [[ -n "${TF_FILES}" && -n "$(which terraform)" ]]; then
+  STATUS=0
+  echo "terraform "$(terraform version | grep -Eo 'v[0-9\.]+' | tr -d v)
+
+  declare -a DIRS
+  while read FILE; do
+    DIRS+=("$(dirname "${FILE}")")
+  done <<< "${TF_FILES}"
+
+  while read DIR; do
+    ( cd "${DIR}"
+      echo "-- ${DIR}"
+      terraform validate )
+    if [[ ${?} -ne 0 ]]; then
+      # Output extra blank line to deal with errors inside loops
+      echo
+      STATUS=1
+    fi
+  done <<< "$(for D in "${DIRS[@]}"; do echo "${D}"; done | sort | uniq)"
+
+  echo
+  if [[ "${STATUS}" == "1" ]]; then
+    echo "FATAL: One or more Terraform Configurations didn't validate.";
+    echo "  Fix them before committing. If it is not possible to fix them all"
+    echo "  commit with the option --no-verify."
+    cleanup
+    exit 1;
+  fi
+fi
+
+# NOTE: This block requires that you have an exported JENKINS_HOSTNAME,
+#       JENKINS_USERNAME and JENKINS_API_KEY environment variables which can be
+#       used to contact Jenkins for the validation. Note that the URL is
+#       currently hard-coded to use HTTPS.
+
+JENKINS_FILES="$(echo "${FILES}" | grep --extended-regex 'Jenkinsfile')"
+if [[ -n "${JENKINS_FILES}" && -n "${JENKINS_HOSTNAME}" && \
+      -n "${JENKINS_USERNAME}" && -n "${JENKINS_API_KEY}" ]]; then
+  STATUS=0
+
+  echo "Jenkins Pipeline"
+
+  JENKINS_URL="${JENKINS_USERNAME}:${JENKINS_API_KEY}@${JENKINS_HOSTNAME}"
+  JENKINS_CRUMB=$(
+    curl -s "https://${JENKINS_URL}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)"
+  )
+
+  if [[ -n "${JENKINS_CRUMB}" ]]; then
+    while read FILE; do
+      echo "-- ${FILE}"
+      FILENAME="${TEMP}/$(md5sum "${FILE}" | cut -d ' ' -f 1)"
+      OUTPUT=$(
+        curl -s -X POST -H "${JENKINGS_CRUMB}" -F "jenkinsfile=<${FILENAME}" \
+          "https://${JENKINS_URL}/pipeline-model-converter/validate"
+      )
+      if [[ "${OUTPUT}" != "Jenkinsfile successfully validated." ]]; then
+        # Output extra blank line to deal with errors inside loops
+        echo "${OUTPUT}"
+        echo
+        STATUS=1
+      fi
+    done <<< "${JENKINS_FILES}"
+  else
+    echo "! Failed to authenticate against Jenkins"
+    STATUS=1
+  fi
+
+  echo
+  if [[ "${STATUS}" == "1" ]]; then
+    echo "FATAL: One or more Jenkinsfile's did not pass linting.";
+    echo "  Fix them before committing. If it is not possible to fix them all"
+    echo "  commit with the option --no-verify."
+    cleanup
+    exit 1;
+  fi
+fi
+
+echo "pre-commit: No files to validate, or all files passed validation."
+cleanup
