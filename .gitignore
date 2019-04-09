@@ -1,2 +1,2 @@
 **/.terraform
-**/terraform.tfstate.d/*.backup
+**/terraform.tfstate.d/*/*.backup
