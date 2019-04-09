@@ -96,6 +96,7 @@ resource "aws_instance" "instance" {
 
   user_data = <<EOF
 #!/bin/sh
+yum install -y epel-release
 yum install -y nginx
 service nginx start
 EOF
