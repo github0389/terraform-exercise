@@ -90,7 +90,7 @@ data "aws_ami" "centos" {
 resource "aws_instance" "instance" {
   ami                         = "${data.aws_ami.centos.id}"
   instance_type               = "t2.small"
-  vpc_security_group_ids      = ["${aws_security_group.security-group.id}"]
+  vpc_security_group_ids      = ["${aws_security_group.nginx.id}"]
   subnet_id                   = "${aws_subnet.subnet-a.id}"
   associate_public_ip_address = true
 
@@ -102,7 +102,7 @@ service nginx start
 EOF
 }
 
-resource "aws_security_group" "security-group" {
+resource "aws_security_group" "nginx" {
   vpc_id = "${aws_vpc.vpc.id}"
 
   ingress = [
