@@ -110,13 +110,13 @@ resource "aws_security_group" "nginx" {
       from_port   = "80"
       to_port     = "80"
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["${var.vpc-cidr}"]
     },
     {
       from_port   = "443"
       to_port     = "443"
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["${var.vpc-cidr}"]
     },
     {
       from_port   = "22"
@@ -132,6 +132,96 @@ resource "aws_security_group" "nginx" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group" "alb" {
+  vpc_id = "${aws_vpc.vpc.id}"
+
+  ingress = [
+    {
+      from_port   = "80"
+      to_port     = "80"
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      from_port   = "443"
+      to_port     = "443"
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+  ]
+
+  egress = [
+    {
+      from_port   = "80"
+      to_port     = "80"
+      protocol    = "tcp"
+      cidr_blocks = ["${var.vpc-cidr}"]
+    },
+    {
+      from_port   = "443"
+      to_port     = "443"
+      protocol    = "tcp"
+      cidr_blocks = ["${var.vpc-cidr}"]
+    },
+  ]
+}
+
+resource "aws_lb" "nginx" {
+  load_balancer_type = "application"
+
+  enable_cross_zone_load_balancing = true
+
+  security_groups = [
+    "${aws_security_group.alb.id}}",
+  ]
+
+  subnets = [
+    "${aws_subnet.subnet-a.id}",
+    "${aws_subnet.subnet-b.id}",
+    "${aws_subnet.subnet-c.id}",
+  ]
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = "${aws_lb.nginx.arn}"
+
+  port     = 80
+  protocol = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = 443
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_target_group" "nginx_80" {
+  vpc_id   = "${aws_vpc.vpc.id}"
+  port     = 80
+  protocol = "HTTP"
+
+  health_check {
+    interval            = 5
+    port                = "traffic-port"
+    path                = "/"
+    protocol            = "HTTP"
+    timeout             = 3
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200-299,300-399,404"
+  }
+}
+
+resource "aws_lb_target_group_attachment" "nginx_80" {
+  target_group_arn = "${aws_lb_target_group.nginx_80.arn}"
+  target_id        = "${aws_instance.instance.id}"
+  port             = 80
 }
 
 output "nginx_domain" {
