@@ -220,5 +220,5 @@ resource "aws_lb_target_group_attachment" "nginx_80" {
 }
 
 output "nginx_domain" {
-  value = "${aws_instance.instance.public_dns}"
+  value = "http://${aws_lb.nginx.dns_name}"
 }
