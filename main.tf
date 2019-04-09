@@ -71,8 +71,24 @@ resource "aws_route_table_association" "subnet-d-route-table-association" {
 }
 
 # Nginx
+
+data "aws_ami" "centos" {
+  most_recent = true
+  owners      = ["679593333241"]
+
+  filter {
+    name   = "product-code"
+    values = ["aw0evgkw8e5c1q413zgy5pjce"]
+  }
+
+  filter {
+    name   = "description"
+    values = ["CentOS Linux 7 x86_64 HVM EBS ENA*"]
+  }
+}
+
 resource "aws_instance" "instance" {
-  ami                         = "ami-cdbfa4ab"
+  ami                         = "${data.aws_ami.centos.id}"
   instance_type               = "t2.small"
   vpc_security_group_ids      = ["${aws_security_group.security-group.id}"]
   subnet_id                   = "${aws_subnet.subnet-a.id}"
