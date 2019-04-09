@@ -10,7 +10,10 @@ Here we have a Terraform script building a simple VPC network, for now we have
 just one instance running the web server Nginx in it's default configuration,
 serving up the default welcome page. To run this use the following command...
 
+    terraform workspace (new|select) {region}
     terraform apply -var-file={region}.tfvars
+
+where `{region}` is either `dublin` or `virginia`.
 
 We want this to be extended, you're are tasked with making the alterations
 detailed below, after completing each stage a test to show the things are still
