@@ -27,6 +27,8 @@ resource "aws_subnet" "subnet-c" {
 }
 
 resource "aws_subnet" "subnet-d" {
+  count = "${var.region == "us-east-1" ? 1 : 0}"
+
   vpc_id            = "${aws_vpc.vpc.id}"
   cidr_block        = "${var.subnet-cidr-d}"
   availability_zone = "${var.region}d"
@@ -62,7 +64,9 @@ resource "aws_route_table_association" "subnet-c-route-table-association" {
 }
 
 resource "aws_route_table_association" "subnet-d-route-table-association" {
-  subnet_id      = "${aws_subnet.subnet-d.id}"
+  count = "${var.region == "us-east-1" ? 1 : 0}"
+
+  subnet_id      = "${element(aws_subnet.subnet-d.*.id, count.index)}"
   route_table_id = "${aws_route_table.subnet-route-table.id}"
 }
 
