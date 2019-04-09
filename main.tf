@@ -92,7 +92,7 @@ resource "aws_instance" "instance" {
 
   ami                         = "${data.aws_ami.centos.id}"
   instance_type               = "t2.small"
-  vpc_security_group_ids      = ["${aws_security_group.nginx.id}"]
+  vpc_security_group_ids      = ["${module.sg_ec2_nginx.this_security_group_id}"]
   subnet_id                   = "${aws_subnet.subnet-a.id}"
   associate_public_ip_address = true
 
@@ -177,79 +177,13 @@ module "sg_alb_nginx" {
   ]
 }
 
-resource "aws_security_group" "nginx" {
-  vpc_id = "${aws_vpc.vpc.id}"
-
-  ingress = [
-    {
-      from_port   = "80"
-      to_port     = "80"
-      protocol    = "tcp"
-      cidr_blocks = ["${var.vpc-cidr}"]
-    },
-    {
-      from_port   = "443"
-      to_port     = "443"
-      protocol    = "tcp"
-      cidr_blocks = ["${var.vpc-cidr}"]
-    },
-    {
-      from_port   = "22"
-      to_port     = "22"
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    },
-  ]
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "alb" {
-  vpc_id = "${aws_vpc.vpc.id}"
-
-  ingress = [
-    {
-      from_port   = "80"
-      to_port     = "80"
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    },
-    {
-      from_port   = "443"
-      to_port     = "443"
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    },
-  ]
-
-  egress = [
-    {
-      from_port   = "80"
-      to_port     = "80"
-      protocol    = "tcp"
-      cidr_blocks = ["${var.vpc-cidr}"]
-    },
-    {
-      from_port   = "443"
-      to_port     = "443"
-      protocol    = "tcp"
-      cidr_blocks = ["${var.vpc-cidr}"]
-    },
-  ]
-}
-
 resource "aws_lb" "nginx" {
   load_balancer_type = "application"
 
   enable_cross_zone_load_balancing = true
 
   security_groups = [
-    "${aws_security_group.alb.id}",
+    "${module.sg_alb_nginx.this_security_group_id}",
   ]
 
   subnets = [
