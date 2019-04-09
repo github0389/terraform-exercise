@@ -174,7 +174,7 @@ resource "aws_lb" "nginx" {
   enable_cross_zone_load_balancing = true
 
   security_groups = [
-    "${aws_security_group.alb.id}}",
+    "${aws_security_group.alb.id}",
   ]
 
   subnets = [
