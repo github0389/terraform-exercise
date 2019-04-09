@@ -66,7 +66,7 @@ if [[ -n "${TF_FILES}" && -n "$(which terraform)" ]]; then
   while read DIR; do
     ( cd "${DIR}"
       echo "-- ${DIR}"
-      terraform validate )
+      terraform validate -var-file=dublin.tfvars)
     if [[ ${?} -ne 0 ]]; then
       # Output extra blank line to deal with errors inside loops
       echo
