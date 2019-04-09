@@ -88,6 +88,8 @@ data "aws_ami" "centos" {
 }
 
 resource "aws_instance" "instance" {
+  count = "${var.instance-count}"
+
   ami                         = "${data.aws_ami.centos.id}"
   instance_type               = "t2.small"
   vpc_security_group_ids      = ["${aws_security_group.nginx.id}"]
@@ -214,8 +216,10 @@ resource "aws_lb_target_group" "nginx_80" {
 }
 
 resource "aws_lb_target_group_attachment" "nginx_80" {
+  count = "${var.instance-count}"
+
   target_group_arn = "${aws_lb_target_group.nginx_80.arn}"
-  target_id        = "${aws_instance.instance.id}"
+  target_id        = "${element(aws_instance.instance.*.id, count.index)}"
   port             = 80
 }
 

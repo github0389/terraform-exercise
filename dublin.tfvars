@@ -1,5 +1,7 @@
 region = "eu-west-1"
 
+instance-count = 2
+
 vpc-cidr = "10.10.10.0/24"
 
 subnet-cidr-a = "10.10.10.0/27"

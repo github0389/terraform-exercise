@@ -1,5 +1,7 @@
 variable "region" {}
 
+variable "instance-count" {}
+
 variable "vpc-cidr" {}
 
 variable "subnet-cidr-a" {}
