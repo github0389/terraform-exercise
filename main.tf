@@ -104,6 +104,79 @@ service nginx start
 EOF
 }
 
+module "sg_ec2_nginx" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "2.16.0"
+
+  name        = "sg-ec2-nginx"
+  description = "nginx Security Group"
+  vpc_id      = "${aws_vpc.vpc.id}"
+
+  ingress_with_cidr_blocks = [
+    {
+      rule        = "ssh-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+  ]
+
+  egress_with_cidr_blocks = [
+    {
+      rule        = "http-80-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+    {
+      rule        = "https-443-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+  ]
+
+  number_of_computed_ingress_with_source_security_group_id = 2
+
+  computed_ingress_with_source_security_group_id = [
+    {
+      rule                     = "http-80-tcp"
+      source_security_group_id = "${module.sg_alb_nginx.this_security_group_id}"
+    },
+    {
+      rule                     = "http-80-tcp"
+      source_security_group_id = "${module.sg_alb_nginx.this_security_group_id}"
+    },
+  ]
+}
+
+module "sg_alb_nginx" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "2.16.0"
+
+  name        = "sg-alb-nginx"
+  description = "ALB Security Group"
+  vpc_id      = "${aws_vpc.vpc.id}"
+
+  ingress_with_cidr_blocks = [
+    {
+      rule        = "http-80-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+    {
+      rule        = "https-443-tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+  ]
+
+  number_of_computed_egress_with_source_security_group_id = 2
+
+  computed_egress_with_source_security_group_id = [
+    {
+      rule                     = "http-80-tcp"
+      source_security_group_id = "${module.sg_ec2_nginx.this_security_group_id}"
+    },
+    {
+      rule                     = "http-80-tcp"
+      source_security_group_id = "${module.sg_ec2_nginx.this_security_group_id}"
+    },
+  ]
+}
+
 resource "aws_security_group" "nginx" {
   vpc_id = "${aws_vpc.vpc.id}"
 
