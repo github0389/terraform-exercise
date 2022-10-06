@@ -25,14 +25,15 @@ jobs:
           tag: 'alpha ${{ env.RELEASE_VERSION }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Gets latest created release info
         id: latest_release_info
-        uses: ctrlaltdev/latest-release-json-action@v1.0.1
-        with:
-          releases: '[...]'
+        uses: rez0n/actions-github-release@1.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }} 
+          type: "latest"
 
       - name: Do something with your bumped release version
         run: echo ${{ steps.latest_release_info.outputs.tag }}
