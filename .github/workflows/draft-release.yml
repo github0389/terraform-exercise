@@ -18,6 +18,9 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - name: echo release version
+        run: echo ${{ github.event.release.tag_name }}
+        
       - name: Gets latest created release info
         id: latest_release_info
         uses: rez0n/actions-github-release@v1.8
