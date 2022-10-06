@@ -17,24 +17,26 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: echo release version
-        run: echo ${{ github.event.release.tag_name }}
-        
       - name: Gets latest created release info
         id: latest_release_info
         uses: rez0n/actions-github-release@v1.8
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: "github0389/terraform-exercise"
           type: "latest"
       
+      # - name: set latest release/TAG
+      #   id: latest_release
+      #   run: echo '::set-output name=tag::${{ steps.latest_release_info.outputs.release }}'
+
       - name: remove v
         id: latest_release
-        uses: ctrlaltdev/latest-release-json-action@v1.0.1
-        with:
-          releases: '[ ${{ steps.latest_release_info.outputs.release }} ]'
+        env:
+          TAG: ${{ steps.latest_release_info.outputs.release }} 
+        run: echo "TAG=${TAG#v}"
 
       - name: echo release version
         run: echo ${{ steps.latest_release.outputs.tag}}
@@ -43,8 +45,7 @@ jobs:
       # - name: Gets latest created release info
       #   id: latest_release_info
       #   uses: dave-ohouse/action-latest-release-info@v0.0.3
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
+
       - name: Bump release version
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
@@ -61,12 +62,9 @@ jobs:
         uses: release-drafter/release-drafter@v5
         with:
           tag: ${{ steps.bump_version.outputs.updated-version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
       - name: draft for develop
         if: startsWith(github.base_ref, 'develop')
         uses: release-drafter/release-drafter@v5
         with:
           tag: 'alpha ${{ env.RELEASE_VERSION }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
