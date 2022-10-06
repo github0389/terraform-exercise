@@ -39,7 +39,7 @@ jobs:
         run: echo "TAG=${TAG#v.}" >> $GITHUB_ENV
 
       - name: echo release version
-        run: echo ${{ TAG }}
+        run: echo ${{ github.TAG }}
 
       - name: Bump release version
         id: bump_version
