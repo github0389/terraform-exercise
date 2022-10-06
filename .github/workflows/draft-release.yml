@@ -14,8 +14,17 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@v5
+      - name: draft for develop
+        if: startsWith(github.base_ref, 'develop')
+        uses: release-drafter/release-drafter@v5
+        with:
+          minor: 'alpha ${{minor}}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: draft for main
+        if: startsWith(github.base_ref, 'develop')
+        uses: release-drafter/release-drafter@v5
+        with:
+          minor: 'beta ${{minor}}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        with:
-          target_commitish: ${{ github.event.pull_request.merge_commit_sha }}
