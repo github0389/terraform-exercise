@@ -26,9 +26,15 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: "github0389/terraform-exercise"
           type: "latest"
+      
+      - name: remove v
+        id: latest_release
+        uses: ctrlaltdev/latest-release-json-action@latest
+        with:
+          releases: '[ ${{ steps.latest_release_info.outputs.release }} ]'
 
-      - name: Do something with your bumped release version
-        run: echo ${{ steps.latest_release_info.outputs.release }}
+      - name: echo release version
+        run: echo ${{ steps.latest_release.outputs.tag}}
         #run: echo ${{ github.repository }}
 
       # - name: Gets latest created release info
@@ -40,11 +46,11 @@ jobs:
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: ${{ steps.latest_release_info.outputs.release }}
+          current-version: ${{ steps.latest_release.outputs.tag }}
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
-      - name: Do something with your bumped release version
+      - name: echo bumped release version
         run: echo ${{ steps.bump_version.outputs.updated-version }}
 
       - name: draft for qa
