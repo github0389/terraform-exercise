@@ -1,0 +1,19 @@
+name: Draft tags/release versions
+run-name: ${{ github.actor }} ${{ GITHUB_BASE_REF }} is testing release drafter on the develop branch
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+permissions:
+  contents: read
+jobs:
+  create_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
