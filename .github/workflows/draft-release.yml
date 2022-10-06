@@ -1,6 +1,10 @@
 name: Draft tags/release versions
 run-name: ${{ github.actor }} ${{ github.base_ref }} ${{ github.head_ref }} ${{ github.ref }}is testing release drafter on the develop branch
 on:
+  push:
+    branches:
+      - develop
+      - main
   pull_request:
     branches:
       - develop
