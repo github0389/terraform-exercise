@@ -29,7 +29,7 @@ jobs:
       
       - name: remove v
         id: latest_release
-        uses: ctrlaltdev/latest-release-json-action@latest
+        uses: ctrlaltdev/latest-release-json-action@v1.0.1
         with:
           releases: '[ ${{ steps.latest_release_info.outputs.release }} ]'
 
