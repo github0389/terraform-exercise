@@ -103,6 +103,6 @@ resource "aws_security_group" "security-group" {
   }
 }
 
-output "nginx_domain" {
-  value = "${aws_instance.instance.public_dns}"
-}
+# output "nginx_domain" {
+#   value = "${aws_instance.instance.public_dns}"
+# }
