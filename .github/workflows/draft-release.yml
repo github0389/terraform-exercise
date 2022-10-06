@@ -17,3 +17,5 @@ jobs:
       - uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          target_commitish: ${{ github.event.pull_request.merge_commit_sha }}
