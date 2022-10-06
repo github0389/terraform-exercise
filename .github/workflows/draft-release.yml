@@ -29,6 +29,8 @@ jobs:
         if: startsWith(github.base_ref, 'main')
         uses: release-drafter/release-drafter@v5
         with:
-          tag: beta${{ env.RELEASE_VERSION }}
+          tag: beta${{ env.NEXT_VERSION_MAJOR }}
+          base: main
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
