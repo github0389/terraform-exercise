@@ -2,18 +2,18 @@ provider "aws" {
   region = "${var.region}"
 }
 
-resource "aws_vpc" "vpc" {
-  cidr_block           = "${var.vpc-cidr}"
-  enable_dns_hostnames = true
-}
+# resource "aws_vpc" "vpc" {
+#   cidr_block           = "${var.vpc-cidr}"
+#   enable_dns_hostnames = true
+# }
 
 
-# Public Subnets
-resource "aws_subnet" "subnet-a" {
-  vpc_id            = "${aws_vpc.vpc.id}"
-  cidr_block        = "${var.subnet-cidr-a}"
-  availability_zone = "${var.region}a"
-}
+# # Public Subnets
+# resource "aws_subnet" "subnet-a" {
+#   vpc_id            = "${aws_vpc.vpc.id}"
+#   cidr_block        = "${var.subnet-cidr-a}"
+#   availability_zone = "${var.region}a"
+# }
 
 resource "aws_subnet" "subnet-b" {
   vpc_id            = "${aws_vpc.vpc.id}"
