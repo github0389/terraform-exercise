@@ -20,22 +20,17 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Gets latest created release info
-        id: latest_release_info
+      - name: Get latest release
+        id: latest_release
         uses: rez0n/actions-github-release@v1.8
         env:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: "github0389/terraform-exercise"
           type: "latest"
-      
-      # - name: set latest release/TAG
-      #   id: latest_release
-      #   run: echo '::set-output name=tag::${{ steps.latest_release_info.outputs.release }}'
 
-      - name: remove v
-        id: latest_release
+      - name: stripp "v" in the version release
         env:
-          TAG: ${{ steps.latest_release_info.outputs.release }} 
+          TAG: ${{ steps.latest_release.outputs.release }} 
         run: echo "TAG=${TAG#v.}" >> $GITHUB_ENV
 
       - name: echo release version
@@ -52,14 +47,14 @@ jobs:
       - name: echo bumped release version
         run: echo ${{ steps.bump_version.outputs.updated-version }}
 
-      - name: draft for qa
+      - name: draft release for pull request on qa
         if: startsWith(github.base_ref, 'qa')
         uses: release-drafter/release-drafter@v5
         with:
           tag: ${{ steps.bump_version.outputs.updated-version }}
 
-      - name: draft for develop
+      - name: draft for pull request on develop
         if: startsWith(github.base_ref, 'develop')
         uses: release-drafter/release-drafter@v5
         with:
-          tag: 'alpha ${{ env.RELEASE_VERSION }}'
+          tag: ${{ steps.bump_version.outputs.updated-version }}
