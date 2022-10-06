@@ -30,7 +30,8 @@ jobs:
 
       - name: stripp "v" in the version release
         env:
-          TAG: ${{ steps.latest_release.outputs.release }} 
+          TAG1: ${{ steps.latest_release.outputs.release }} 
+          TAG: ${TAG#v.}
         run: echo "TAG=${TAG#v.}" >> $GITHUB_ENV
 
       - name: echo release version
