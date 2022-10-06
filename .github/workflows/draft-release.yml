@@ -36,7 +36,7 @@ jobs:
         id: latest_release
         env:
           TAG: ${{ steps.latest_release_info.outputs.release }} 
-        run: echo "TAG=${TAG#v.}"
+        run: echo "TAG=${TAG#v.}" >> $GITHUB_ENV
 
       - name: echo release version
         run: echo ${{ TAG }}
