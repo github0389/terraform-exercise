@@ -1,11 +1,11 @@
-# provider "aws" {
-#   region = "${var.region}"
-# }
+provider "aws" {
+  region = "${var.region}"
+}
 
-# resource "aws_vpc" "vpc" {
-#   cidr_block           = "${var.vpc-cidr}"
-#   enable_dns_hostnames = true
-# }
+resource "aws_vpc" "vpc" {
+  cidr_block           = "${var.vpc-cidr}"
+  enable_dns_hostnames = true
+}
 
 
 # Public Subnets
