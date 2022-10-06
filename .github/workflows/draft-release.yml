@@ -1,6 +1,10 @@
 name: Draft tags/release versions
-run-name: ${{ github.actor }} ${{ github.base_ref }} ${{ github.head_ref }} ${{ github.ref }}is testing release drafter on the develop branch
+run-name: ${{ github.actor }} ${{ github.repository }} is testing release drafter on the develop branch
 on:
+  push:
+    branches:
+      - develop
+      - main
   pull_request:
     branches:
       - develop
@@ -13,18 +17,45 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: draft for develop
+      - name: Get latest release
+        id: latest_release
+        uses: rez0n/actions-github-release@v1.8
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "github0389/terraform-exercise"
+          type: "latest"
+
+      - name: stripp "v" in the version release
+        env:
+          TAG1: ${{ steps.latest_release.outputs.release }} 
+          TAG: ${TAG#v.}
+        run: echo "TAG=${TAG#v.}" >> $GITHUB_ENV
+
+      - name: echo release version
+        run: echo ${{ env.TAG }}
+
+      - name: Bump release version
+        id: bump_version
+        uses: cookbenjamin/update-version@v1.0.1
+        with:
+          current-version: ${{ env.TAG }}
+          increment-version-fragment: 'MINOR'
+          prerelease-fragment: 'ALPHA'
+
+      - name: echo bumped release version
+        run: echo ${{ steps.bump_version.outputs.updated-version }}
+
+      - name: draft release for pull request on qa
+        if: startsWith(github.base_ref, 'qa')
+        uses: release-drafter/release-drafter@v5
+        with:
+          tag: ${{ steps.bump_version.outputs.updated-version }}
+
+      - name: draft for pull request on develop
         if: startsWith(github.base_ref, 'develop')
         uses: release-drafter/release-drafter@v5
         with:
-          minor: 'alpha ${{minor}}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: draft for main
-        if: startsWith(github.base_ref, 'develop')
-        uses: release-drafter/release-drafter@v5
-        with:
-          minor: 'beta ${{minor}}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          tag: ${{ steps.bump_version.outputs.updated-version }}
