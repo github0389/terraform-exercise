@@ -29,7 +29,7 @@ jobs:
         if: startsWith(github.base_ref, 'main')
         uses: release-drafter/release-drafter@v5
         with:
-          tag: beta${{ env.NEXT_VERSION_MAJOR }}
+          tag: ${{ env.NEXT_VERSION_MAJOR }}
           base: main
 
         env:
