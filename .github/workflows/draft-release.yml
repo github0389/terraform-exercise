@@ -48,7 +48,7 @@ jobs:
         run: echo ${{ steps.bump_version.outputs.updated-version }}
 
       - name: draft release for pull request on qa
-        if: startsWith(github.base_ref, 'qa')
+        if: startsWith(github.base_ref, 'main')
         uses: release-drafter/release-drafter@v5
         with:
           tag: ${{ steps.bump_version.outputs.updated-version }}
