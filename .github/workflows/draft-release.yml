@@ -45,7 +45,7 @@ jobs:
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: ${{ TAG }}
+          current-version: ${{ github.TAG }}
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
