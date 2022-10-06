@@ -28,7 +28,7 @@ jobs:
 
       - name: Gets latest created release info
         id: latest_release_info
-        uses: rez0n/actions-github-release@1.8
+        uses: rez0n/actions-github-release@v1.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
