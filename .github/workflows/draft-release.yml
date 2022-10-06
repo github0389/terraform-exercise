@@ -1,5 +1,5 @@
 name: Draft tags/release versions
-run-name: ${{ github.actor }} ${{ github.base_ref }} ${{ github.head_ref }} ${{ github.ref }}is testing release drafter on the develop branch
+run-name: ${{ github.actor }} ${{ github.repository }} is testing release drafter on the develop branch
 on:
   push:
     branches:
@@ -18,25 +18,19 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: draft for develop
-        if: startsWith(github.base_ref, 'develop')
-        uses: release-drafter/release-drafter@v5
-        with:
-          tag: 'alpha ${{ env.RELEASE_VERSION }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Gets latest created release info
         id: latest_release_info
         uses: rez0n/actions-github-release@v1.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }} 
+          repository: "github0389/terraform-exercise"
           type: "latest"
 
       - name: Do something with your bumped release version
-        run: echo ${{ steps.latest_release_info.outputs.tag }}
+        run: echo ${{ steps.latest_release_info.outputs.release }}
+        #run: echo ${{ github.repository }}
+
       # - name: Gets latest created release info
       #   id: latest_release_info
       #   uses: dave-ohouse/action-latest-release-info@v0.0.3
@@ -46,7 +40,7 @@ jobs:
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: ${{ steps.latest_release_info.outputs.tag }}
+          current-version: ${{ steps.latest_release_info.outputs.release }}
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
@@ -60,3 +54,10 @@ jobs:
           tag: ${{ steps.bump_version.outputs.updated-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      - name: draft for develop
+        if: startsWith(github.base_ref, 'develop')
+        uses: release-drafter/release-drafter@v5
+        with:
+          tag: 'alpha ${{ env.RELEASE_VERSION }}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
