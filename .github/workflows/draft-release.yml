@@ -39,13 +39,13 @@ jobs:
         run: echo "TAG=${TAG#v.}" >> $GITHUB_ENV
 
       - name: echo release version
-        run: echo ${{ github.TAG }}
+        run: echo ${{ env.TAG }}
 
       - name: Bump release version
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: ${{ github.TAG }}
+          current-version: ${{ env.TAG }}
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
