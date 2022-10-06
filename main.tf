@@ -8,12 +8,12 @@ provider "aws" {
 # }
 
 
-# Public Subnets
-resource "aws_subnet" "subnet-a" {
-  vpc_id            = "${aws_vpc.vpc.id}"
-  cidr_block        = "${var.subnet-cidr-a}"
-  availability_zone = "${var.region}a"
-}
+# # Public Subnets
+# resource "aws_subnet" "subnet-a" {
+#   vpc_id            = "${aws_vpc.vpc.id}"
+#   cidr_block        = "${var.subnet-cidr-a}"
+#   availability_zone = "${var.region}a"
+# }
 
 resource "aws_subnet" "subnet-b" {
   vpc_id            = "${aws_vpc.vpc.id}"
