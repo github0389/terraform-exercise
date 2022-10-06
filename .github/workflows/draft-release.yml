@@ -1,10 +1,10 @@
 name: Draft tags/release versions
 run-name: ${{ github.actor }} ${{ github.repository }} is testing release drafter on the develop branch
 on:
-  push:
-    branches:
-      - develop
-      - main
+  # push:
+  #   branches:
+  #     - develop
+  #     - main
   pull_request:
     branches:
       - develop
@@ -36,25 +36,48 @@ jobs:
       - name: echo release version
         run: echo ${{ env.TAG }}
 
-      - name: Bump release version
-        id: bump_version
+      - name: generate alpha release version
+        id: bump_version_alpha
         uses: cookbenjamin/update-version@v1.0.1
         with:
           current-version: ${{ env.TAG }}
-          increment-version-fragment: 'MINOR'
+          increment-version-fragment: 'MAJOR'
           prerelease-fragment: 'ALPHA'
 
-      - name: echo bumped release version
-        run: echo ${{ steps.bump_version.outputs.updated-version }}
-
-      - name: draft release for pull request on qa
-        if: startsWith(github.base_ref, 'main')
-        uses: release-drafter/release-drafter@v5
+      - name: generate beta release version
+        id: bump_version_beta
+        uses: cookbenjamin/update-version@v1.0.1
         with:
-          tag: ${{ steps.bump_version.outputs.updated-version }}
+          current-version: ${{ env.TAG }}
+          increment-version-fragment: 'MAJOR'
+          prerelease-fragment: 'BETA'
+      
+      - name: generate rc release version
+        id: bump_version_rc
+        uses: cookbenjamin/update-version@v1.0.1
+        with:
+          current-version: ${{ env.TAG }}
+          increment-version-fragment: 'MAJOR'
+          prerelease-fragment: 'RC'
 
       - name: draft for pull request on develop
         if: startsWith(github.base_ref, 'develop')
         uses: release-drafter/release-drafter@v5
         with:
-          tag: ${{ steps.bump_version.outputs.updated-version }}
+          tag: ${{ steps.bump_version_alpha.outputs.updated-version }}
+
+      - name: draft release for pull request on Test
+        if: startsWith(github.base_ref, 'test')
+        uses: release-drafter/release-drafter@v5
+        with:
+          tag: ${{ steps.bump_version_beta.outputs.updated-version }}
+
+      - name: draft release for pull request on QA
+        if: startsWith(github.base_ref, 'qa')
+        uses: release-drafter/release-drafter@v5
+        with:
+          tag: ${{ steps.bump_version_rc.outputs.updated-version }}
+
+      - name: draft release for pull request on PROD
+        if: startsWith(github.base_ref, 'prod')
+        uses: release-drafter/release-drafter@v5
