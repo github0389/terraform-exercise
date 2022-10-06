@@ -26,7 +26,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: draft for main
-        if: startsWith(github.base_ref, 'develop')
+        if: startsWith(github.base_ref, 'main')
         uses: release-drafter/release-drafter@v5
         with:
           tag_name: 'beta ${{ env.RELEASE_VERSION }}'
