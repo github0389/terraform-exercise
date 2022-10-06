@@ -25,11 +25,16 @@ jobs:
           tag: 'alpha ${{ env.RELEASE_VERSION }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Gets latest created release info
+        id: latest_release_info
+        uses: dave-ohouse/action-latest-release-info@v0.0.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Bump release version
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: ${{ env.RELEASE_VERSION }}
+          current-version: ${{ steps.latest_release_info.outputs.tag_name }}
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
