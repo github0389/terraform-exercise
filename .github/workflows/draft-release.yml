@@ -36,21 +36,16 @@ jobs:
         id: latest_release
         env:
           TAG: ${{ steps.latest_release_info.outputs.release }} 
-        run: echo "TAG=${TAG#v}"
+        run: echo "TAG=${TAG#v.}"
 
       - name: echo release version
-        run: echo ${{ steps.latest_release.outputs.tag}}
-        #run: echo ${{ github.repository }}
-
-      # - name: Gets latest created release info
-      #   id: latest_release_info
-      #   uses: dave-ohouse/action-latest-release-info@v0.0.3
+        run: echo TAG
 
       - name: Bump release version
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: ${{ steps.latest_release.outputs.tag }}
+          current-version: TAG
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
