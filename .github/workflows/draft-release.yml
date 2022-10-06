@@ -39,13 +39,13 @@ jobs:
         run: echo "TAG=${TAG#v.}"
 
       - name: echo release version
-        run: echo TAG
+        run: echo ${{ TAG }}
 
       - name: Bump release version
         id: bump_version
         uses: cookbenjamin/update-version@v1.0.1
         with:
-          current-version: TAG
+          current-version: ${{ TAG }}
           increment-version-fragment: 'MINOR'
           prerelease-fragment: 'ALPHA'
 
